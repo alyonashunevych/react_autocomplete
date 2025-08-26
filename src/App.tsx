@@ -1,73 +1,28 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.scss';
+import { Dropdown } from './components/Dropdown';
 import { peopleFromServer } from './data/people';
 
 export const App: React.FC = () => {
-  const { name, born, died } = peopleFromServer[0];
+  const [personId, setPersonId] = useState<number>();
+  const selectedPerson = personId ? peopleFromServer[personId] : undefined;
+  const name = selectedPerson?.name;
+  const born = selectedPerson?.born;
+  const died = selectedPerson?.died;
 
   return (
     <div className="container">
       <main className="section is-flex is-flex-direction-column">
         <h1 className="title" data-cy="title">
-          {`${name} (${born} - ${died})`}
+          {personId ? `${name} (${born} - ${died})` : 'No selected person'}
         </h1>
 
-        <div className="dropdown is-active">
-          <div className="dropdown-trigger">
-            <input
-              type="text"
-              placeholder="Enter a part of the name"
-              className="input"
-              data-cy="search-input"
-            />
-          </div>
-
-          <div className="dropdown-menu" role="menu" data-cy="suggestions-list">
-            <div className="dropdown-content">
-              <div className="dropdown-item" data-cy="suggestion-item">
-                <p className="has-text-link">Pieter Haverbeke</p>
-              </div>
-
-              <div className="dropdown-item" data-cy="suggestion-item">
-                <p className="has-text-link">Pieter Bernard Haverbeke</p>
-              </div>
-
-              <div className="dropdown-item" data-cy="suggestion-item">
-                <p className="has-text-link">Pieter Antone Haverbeke</p>
-              </div>
-
-              <div className="dropdown-item" data-cy="suggestion-item">
-                <p className="has-text-danger">Elisabeth Haverbeke</p>
-              </div>
-
-              <div className="dropdown-item" data-cy="suggestion-item">
-                <p className="has-text-link">Pieter de Decker</p>
-              </div>
-
-              <div className="dropdown-item" data-cy="suggestion-item">
-                <p className="has-text-danger">Petronella de Decker</p>
-              </div>
-
-              <div className="dropdown-item" data-cy="suggestion-item">
-                <p className="has-text-danger">Elisabeth Hercke</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div
-          className="
-            notification
-            is-danger
-            is-light
-            mt-3
-            is-align-self-flex-start
-          "
-          role="alert"
-          data-cy="no-suggestions-message"
-        >
-          <p className="has-text-danger">No matching suggestions</p>
-        </div>
+        <Dropdown
+          delay={300}
+          onSelected={id => {
+            setPersonId(id);
+          }}
+        />
       </main>
     </div>
   );

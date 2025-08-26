@@ -1,0 +1,97 @@
+import classNames from 'classnames';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { peopleFromServer } from '../../data/people';
+import './Dropdown.scss';
+import debounce from 'lodash.debounce';
+
+type Props = {
+  delay?: number;
+  onSelected: (id: number) => void;
+};
+
+export const Dropdown: React.FC<Props> = ({ delay = 300, onSelected }) => {
+  const [isFocused, setIsFocused] = useState(false);
+  const [listOfPeople, setListOfPeople] = useState(peopleFromServer);
+  const [query, setQuery] = useState('');
+  const [appliedQuery, setAppliedQuery] = useState('');
+
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  const applyQuery = useCallback(debounce(setAppliedQuery, delay), [
+    setAppliedQuery,
+    delay,
+  ]);
+
+  const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(event.target.value);
+    applyQuery(event.target.value);
+  };
+
+  const filteredPeople = useMemo(() => {
+    return listOfPeople.filter(person =>
+      person.name.toLowerCase().includes(appliedQuery.toLowerCase()),
+    );
+  }, [appliedQuery, listOfPeople]);
+
+  return (
+    <div className={classNames('dropdown', { 'is-active': isFocused })}>
+      <div className="dropdown-trigger">
+        <input
+          type="text"
+          ref={inputRef}
+          placeholder="Enter a part of the name"
+          value={query}
+          className="input"
+          data-cy="search-input"
+          onChange={handleQueryChange}
+          onClick={() => {
+            setQuery('');
+            onSelected(0);
+          }}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+        />
+      </div>
+
+      <div className="dropdown-menu" role="menu" data-cy="suggestions-list">
+        {filteredPeople.length !== 0 ? (
+          <div className="dropdown-content">
+            {filteredPeople.map(person => (
+              <div
+                className="dropdown-item"
+                data-cy="suggestion-item"
+                key={person.slug}
+                onMouseDown={() => {
+                  onSelected(listOfPeople.indexOf(person));
+                  setQuery(person.name);
+                  setAppliedQuery('');
+                  setListOfPeople(peopleFromServer);
+                }}
+              >
+                <p className="has-text-link">{person.name}</p>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div
+            className="
+            notification
+            is-danger
+            is-light
+            mt-3
+            is-align-self-flex-start
+          "
+            role="alert"
+            data-cy="no-suggestions-message"
+          >
+            <p className="has-text-danger">No matching suggestions</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
