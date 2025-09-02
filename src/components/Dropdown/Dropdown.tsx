@@ -1,17 +1,22 @@
 import classNames from 'classnames';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { peopleFromServer } from '../../data/people';
 import './Dropdown.scss';
 import debounce from 'lodash.debounce';
+import { Person } from '../../types/Person';
 
 type Props = {
   delay?: number;
-  onSelected: (id: number) => void;
+  onSelected: (person: Person | null) => void;
+  people: Person[];
 };
 
-export const Dropdown: React.FC<Props> = ({ delay = 300, onSelected }) => {
+export const Dropdown: React.FC<Props> = ({
+  delay = 300,
+  onSelected,
+  people,
+}) => {
   const [isFocused, setIsFocused] = useState(false);
-  const [listOfPeople, setListOfPeople] = useState(peopleFromServer);
+  const [listOfPeople, setListOfPeople] = useState(people);
   const [query, setQuery] = useState('');
   const [appliedQuery, setAppliedQuery] = useState('');
 
@@ -28,7 +33,8 @@ export const Dropdown: React.FC<Props> = ({ delay = 300, onSelected }) => {
 
   const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
-    applyQuery(event.target.value);
+    applyQuery(event.target.value.trim());
+    onSelected(null);
   };
 
   const filteredPeople = useMemo(() => {
@@ -50,7 +56,6 @@ export const Dropdown: React.FC<Props> = ({ delay = 300, onSelected }) => {
           onChange={handleQueryChange}
           onClick={() => {
             setQuery('');
-            onSelected(0);
           }}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
@@ -66,10 +71,10 @@ export const Dropdown: React.FC<Props> = ({ delay = 300, onSelected }) => {
                 data-cy="suggestion-item"
                 key={person.slug}
                 onMouseDown={() => {
-                  onSelected(listOfPeople.indexOf(person));
+                  onSelected(person);
                   setQuery(person.name);
                   setAppliedQuery('');
-                  setListOfPeople(peopleFromServer);
+                  setListOfPeople(people);
                 }}
               >
                 <p className="has-text-link">{person.name}</p>
