@@ -34,7 +34,6 @@ export const Dropdown: React.FC<Props> = ({
   const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setQuery(event.target.value);
     applyQuery(event.target.value.trim());
-    onSelected(null);
   };
 
   const filteredPeople = useMemo(() => {
@@ -56,6 +55,7 @@ export const Dropdown: React.FC<Props> = ({
           onChange={handleQueryChange}
           onClick={() => {
             setQuery('');
+            onSelected(null);
           }}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
